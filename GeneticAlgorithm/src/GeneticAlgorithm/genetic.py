@@ -1,9 +1,5 @@
 # № в списке 10
 
-#     Вариант фитнес функции (функции приспособления) 3:
-#         X: [-15, -2]
-#         Y: [-15, -2]
-#         Z = 0.5*(X-3)*(Y-5)*(Y-1)*sin(Y)*cos(2*X)
 #     Критерий 1 (критерий останова): 
 #         Выполнение алгоритмом априорно заданного числа итераций
 #     Скрещивание 1 (оператор скрещивания):
@@ -16,10 +12,6 @@
 from math import *
 import random
 
-
-# Исходная функция
-def fitness_function(x, y):
-    return 0.5*(x-3)*(y-5)*(y-1)*sin(y)*cos(2*x)
 
 
 def decimal_to_gray(decimal):
@@ -51,26 +43,28 @@ def generate_chromosome(chromosome_length, from_value, to_value, function_order)
 
 
 # Расчет значения функции приспособленности для каждого кандидата в популяции
-def evaluate_population(population):
+def evaluate_population(population, fitness_function):
     fitness_values = []
     for chromosome in population:
-        x = decode_chromosome(chromosome)
-        fitness_values.append(fitness_function(x, 0))
+        x = gray_chromosome_to_decimal_chromosome(chromosome)
+        fitness_values.append(fitness_function(x))
     return fitness_values
 
 
-# Декодирование хромосомы в значение x
-def decode_chromosome(chromosome):
-    n = len(chromosome)
-    decimal_value = 0
-    for i in range(n):
-        decimal_value += chromosome[i] * (2**(n-i-1))
-    x = decimal_value / (2**n-1) * 0.31
-    return x
+# Декодирование хромосомы в значение x, y, ...
+def gray_chromosome_to_decimal_chromosome(chromosome): # хромосома поподает в коде Грея
+    order = len(chromosome)
+    decimal_chromosome = []
+    for i in range(order):
+        subchromosome = list(gray_to_decimal(subchromsome_to_decimal(chromosome[i])))
+        decimal_chromosome.append(subchromosome)
+    return decimal_chromosome
+
+    
 
 
-def chromsome_to_decimal(chromosome):
-    string = ''.join(str(x) for x in chromosome)
+def subchromsome_to_decimal(subchromosome):
+    string = ''.join(str(x) for x in subchromosome)
     return int(string)
 
 def decimal_to_subchromosome(decimal, chromosome_length):
@@ -88,79 +82,41 @@ def decimal_to_subchromosome(decimal, chromosome_length):
 
 
 # селекция турнирным методом
-def selection(population, fitness_values, tournament_size):
+def selection(population, fitness_values, tournament_size, weak_will_win_probability):
     tournament_participants = random.sample(range(len(population)), tournament_size) # выбираем tournament_size участников турнира из исходной популяции
     winner_index = tournament_participants[0]
     for i in tournament_participants[1:]:
-        if (fitness_values[i] > winner_index):
-            winner_index = fitness_values[i]
+        if (fitness_values[i] > fitness_values[winner_index]):
+            if random.random() > weak_will_win_probability:
+                winner_index = i
     return population[winner_index]
 
 
 # Скрещивание (одноточечное)
 def crossing(parent1, parent2, crossing_probability):
-    if random.random() < crossing_probability:
-        crossing_point = random.randint(1, len(parent1)-1) # точка скрещивания не может быть на концах хромосомы
-        child1 = parent1[:crossing_point] + parent2[crossing_point:]
-        child2 = parent2[:crossing_point] + parent1[crossing_point:]
-        return child1, child2
-    else:
+    if len(parent1) != len(parent2):
         return parent1, parent2
+    child1 = []
+    child2 = []
+    for i in range(len(parent1)):
+        if random.random() < crossing_probability:
+            crossing_point = random.randint(1, len(parent1[i])-1) # точка скрещивания не может быть на концах хромосомы
+            child1.append(parent1[i][:crossing_point] + parent2[i][crossing_point:])
+            child2.append(parent2[i][:crossing_point] + parent1[i][crossing_point:])
+        else:
+            child1.append(parent1[i])
+            child2.append(parent2[i])
+    return child1, child2
+    
     
 
 # Мутация (обменом)
 def mutate(chromosome, mutation_probability):
-    if random.random() < mutation_probability:
-        if len(chromosome) > 2:
-            indexes = random.sample(range(len(chromosome)), 2)
-            chromosome[indexes[0]], chromosome[indexes[1]] = chromosome[indexes[1]], chromosome[indexes[0]]
-            # firstIndex = indexes[0]
-            # secondIndex = indexes[1]
-            # tmp = chromosome[firstIndex]
-            # chromosome[firstIndex] = chromosome[secondIndex]
-            # chromosome[secondIndex] = tmp
+    for i in range(len(chromosome)):
+        if random.random() < mutation_probability:
+            if len(chromosome[i]) > 2:
+                indexes = random.sample(range(len(chromosome[i])), 2)
+                chromosome[i][indexes[0]], chromosome[indexes[1]] = chromosome[i][indexes[1]], chromosome[indexes[0]]
     return chromosome
-
-
-# Генетический алгоритм
-def genetic_algorithm(population_size, chromosome_length, tournament_size, crossing_probability, mutation_probability, num_generations):
-    population = generate_population(population_size, chromosome_length)
-    for i in range(num_generations):
-        fitness_values = evaluate_population(population)
-        parents = [selection(population, fitness_values, tournament_size) for i in range(population_size)]
-        offspring = []
-        for j in range(0, population_size-1, 2):
-            parent1 = parents[j]
-            parent2 = parents[j+1]
-            child1, child2 = crossing(parent1, parent2, crossing_probability)
-            child1 = mutate(child1, mutation_probability)
-            child2 = mutate(child2, mutation_probability)
-            offspring.append(child1)
-            offspring.append(child2)
-        population = offspring
-        best_fitness = max(fitness_values)
-        best_chromosome = population[fitness_values.index(best_fitness)-1]
-        best_x = decode_chromosome(best_chromosome)
-        print(f"Поколение {i+1}:")
-        print(f"Лучшее решение: x = {best_x}, f(x) = {best_fitness}")
-        print("Хромосомы:")
-        for chromosome in population:
-            x = decode_chromosome(chromosome)
-            fitness = fitness_function(x, 0)
-            print(f"{chromosome} -> x = {x}, f(x) = {fitness}")
-        print("="*20)
-
-
-# Задаем параметры генетического алгоритма
-population_size = 11
-chromosome_length = 5
-tournament_size = 2
-crossover_probability = 1
-mutation_probability = 0.008
-num_generations = 20
-
-
-# Запускаем генетический алгоритм
-#genetic_algorithm(population_size, chromosome_length, tournament_size, crossover_probability, mutation_probability, num_generations)
 
 
