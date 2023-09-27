@@ -13,17 +13,33 @@ from math import *
 import random
 
 
+def binary_list_to_gray_list(binary_list):
+    first = binary_list.copy()
+    second = binary_list.copy()
+    length = len(binary_list)
+    first.pop(length - 1)
+    first.insert(0, 0)
+    return XOR(first, second)
 
-def decimal_to_gray(decimal):
-    return decimal ^ (decimal >> 1)
+def gray_list_to_binary_list(gray_list):
+    gray = gray_list.copy()
+    binary = [0 for _ in range(len(gray_list))]
+    while 1 in gray: # пока в списке есть 1
+        binary = XOR(binary, gray)
+        gray.pop(len(gray) - 1)
+        gray.insert(0, 0)
+    return binary
 
 
-def gray_to_decimal(gray):
-    binary = 0
-    while (gray > 0):
-        binary ^= gray
-        gray >>= 1
-    return binary 
+
+def XOR(first_list, second_list):
+    result = []
+    for i in range(len(first_list)):
+        if (first_list[i] == second_list[i]):
+            result.append(0)
+        else:
+            result.append(1)
+    return result
 
 
 # Создание начальной популяции
@@ -36,7 +52,7 @@ def generate_population(population_size, chromosome_length, from_value, to_value
 def generate_chromosome(chromosome_length, from_value, to_value, function_order):
     chromosome = []
     while function_order > 0:
-        chromosome.append(decimal_to_subchromosome(random.randint(from_value, to_value), chromosome_length))
+        chromosome.append(decimal_to_binary_list(random.randint(from_value, to_value), chromosome_length))
         function_order -= 1
     return chromosome
     
@@ -52,22 +68,22 @@ def evaluate_population(population, fitness_function):
 
 
 # Декодирование хромосомы в значение x, y, ...
-def gray_chromosome_to_decimal_chromosome(chromosome): # хромосома поподает в коде Грея
+def gray_chromosome_to_decimal_chromosome(chromosome): # хромосома поподает в коде Грея (список списков из нулей и единиц)
     order = len(chromosome)
     decimal_chromosome = []
     for i in range(order):
-        subchromosome = list(gray_to_decimal(subchromsome_to_decimal(chromosome[i])))
-        decimal_chromosome.append(subchromosome)
+        decimal_subchromosome = binary_list_to_decimal(gray_list_to_binary_list(chromosome[i]))
+        decimal_chromosome.append(decimal_subchromosome)
     return decimal_chromosome
 
     
 
 
-def subchromsome_to_decimal(subchromosome):
+def binary_list_to_decimal(subchromosome):
     string = ''.join(str(x) for x in subchromosome)
     return int(string)
 
-def decimal_to_subchromosome(decimal, chromosome_length):
+def decimal_to_binary_list(decimal, chromosome_length):
     string = bin(decimal)[2:]
     lst = []
     chromosome = []
@@ -116,7 +132,7 @@ def mutate(chromosome, mutation_probability):
         if random.random() < mutation_probability:
             if len(chromosome[i]) > 2:
                 indexes = random.sample(range(len(chromosome[i])), 2)
-                chromosome[i][indexes[0]], chromosome[indexes[1]] = chromosome[i][indexes[1]], chromosome[indexes[0]]
+                chromosome[i][indexes[0]], chromosome[i][indexes[1]] = chromosome[i][indexes[1]], chromosome[i][indexes[0]]
     return chromosome
 
 

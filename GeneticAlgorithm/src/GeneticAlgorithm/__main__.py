@@ -24,7 +24,7 @@ def genetic_algorithm(population_size, value_from, value_to, tournament_size, cr
     population = generate_population(population_size, chromosome_length, 0, points_amount - 1, function_order)
     for i in range(num_generations):
         fitness_values = evaluate_population(population, fitness_function)
-        parents = [selection(population, fitness_values, tournament_size, weak_will_win_probability) for i in range(population_size)] # популяция сократилась в tournament_size раз
+        parents = [selection(population, fitness_values, tournament_size, weak_will_win_probability) for _ in range(population_size)] # популяция сократилась в tournament_size раз
         offspring = []
         for j in range(0, population_size-1, 2):
             parent1 = parents[j]
@@ -43,11 +43,12 @@ def genetic_algorithm(population_size, value_from, value_to, tournament_size, cr
         print("Хромосомы:")
         for chromosome in population:
             x = gray_chromosome_to_decimal_chromosome(chromosome)
-            fitness = fitness_function(x[0], x[1])
+            fitness = fitness_function(x)
             print(f"{chromosome} -> x = {x[0]}, y = {x[1]}, f(x, y) = {fitness}")
         print("="*20)
 
-
+def fitness(x):
+    return fitness_function(x[0], x[1])
 
 if __name__ == '__main__':
     # Задаем параметры генетического алгоритма
@@ -68,4 +69,4 @@ if __name__ == '__main__':
 
     # Запускаем генетический алгоритм
     genetic_algorithm(population_size, value_from, value_to, tournament_size,
-                       crossing_probability, mutation_probability, weak_will_win_probability, num_generations, fitness_function, function_order)
+                       crossing_probability, mutation_probability, weak_will_win_probability, num_generations, fitness, function_order)
