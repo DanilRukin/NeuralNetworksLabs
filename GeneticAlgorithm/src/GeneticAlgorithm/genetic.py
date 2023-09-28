@@ -59,11 +59,11 @@ def generate_chromosome(chromosome_length, from_value, to_value, function_order)
 
 
 # Расчет значения функции приспособленности для каждого кандидата в популяции
-def evaluate_population(population, fitness_function):
+def evaluate_population(population, fitness_function, restore_function):
     fitness_values = []
     for chromosome in population:
         x = gray_chromosome_to_decimal_chromosome(chromosome)
-        fitness_values.append(fitness_function(x))
+        fitness_values.append(fitness_function(list(map(lambda subchromosome : restore_function(subchromosome), x))))
     return fitness_values
 
 
@@ -81,7 +81,7 @@ def gray_chromosome_to_decimal_chromosome(chromosome): # хромосома по
 
 def binary_list_to_decimal(subchromosome):
     string = ''.join(str(x) for x in subchromosome)
-    return int(string)
+    return int('0b' + string, 2)
 
 def decimal_to_binary_list(decimal, chromosome_length):
     string = bin(decimal)[2:]

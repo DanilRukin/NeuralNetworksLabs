@@ -19,11 +19,11 @@ def get_nearest_2_power(number):
 # Генетический алгоритм
 def genetic_algorithm(population_size, value_from, value_to, tournament_size, crossing_probability, mutation_probability, 
                       weak_will_win_probability, num_generations, fitness_function, function_order):
-    points_amount = (value_to - value_from) * (1 / epsilon)
+    points_amount = (value_to - value_from) / epsilon
     chromosome_length = get_nearest_2_power(points_amount)
     population = generate_population(population_size, chromosome_length, 0, points_amount - 1, function_order)
     for i in range(num_generations):
-        fitness_values = evaluate_population(population, fitness_function)
+        fitness_values = evaluate_population(population, fitness_function, lambda subchromosome: restore_number(subchromosome, value_from, value_to, epsilon))
         parents = [selection(population, fitness_values, tournament_size, weak_will_win_probability) for _ in range(population_size)] # популяция сократилась в tournament_size раз
         offspring = []
         for j in range(0, population_size-1, 2):
@@ -37,18 +37,23 @@ def genetic_algorithm(population_size, value_from, value_to, tournament_size, cr
         population = offspring
         best_fitness = max(fitness_values)
         best_chromosome = population[fitness_values.index(best_fitness)-1]
-        best_decimal_chromosome = gray_chromosome_to_decimal_chromosome(best_chromosome)
+        best_decimal_chromosome = list(map(lambda subchromosome: restore_number(subchromosome, value_from, value_to, epsilon), gray_chromosome_to_decimal_chromosome(best_chromosome)))
         print(f"Поколение {i+1}:")
         print(f"Лучшее решение: x = {best_decimal_chromosome[0]}, y = {best_decimal_chromosome[1]}, f(x, y) = {best_fitness}")
         print("Хромосомы:")
         for chromosome in population:
-            x = gray_chromosome_to_decimal_chromosome(chromosome)
+            x = list(map(lambda subchromosome: restore_number(subchromosome, value_from, value_to, epsilon), gray_chromosome_to_decimal_chromosome(chromosome)))
             fitness = fitness_function(x)
             print(f"{chromosome} -> x = {x[0]}, y = {x[1]}, f(x, y) = {fitness}")
         print("="*20)
 
 def fitness(x):
     return fitness_function(x[0], x[1])
+
+def restore_number(number, value_from, value_to, epsilon):
+    points_amount = (value_to - value_from) / epsilon
+    return value_from + (number / points_amount) * (value_to - value_from)
+
 
 if __name__ == '__main__':
     # Задаем параметры генетического алгоритма
