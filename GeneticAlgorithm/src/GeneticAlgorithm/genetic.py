@@ -76,7 +76,11 @@ def gray_chromosome_to_decimal_chromosome(chromosome): # хромосома по
         decimal_chromosome.append(decimal_subchromosome)
     return decimal_chromosome
 
-    
+def get_nearest_2_power(number):
+    power = 0
+    while number > 2**power:
+        power += 1
+    return power 
 
 
 def binary_list_to_decimal(subchromosome):

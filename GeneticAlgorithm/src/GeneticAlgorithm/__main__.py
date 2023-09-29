@@ -10,18 +10,13 @@ from genetic import *
 def fitness_function(x, y):
     return 0.5*(x-3)*(y-5)*(y-1)*sin(y)*cos(2*x)
 
-def get_nearest_2_power(number):
-    power = 0
-    while number < 2**power:
-        power =+ 1
-    return power
 
 # Генетический алгоритм
 def genetic_algorithm(population_size, value_from, value_to, tournament_size, crossing_probability, mutation_probability, 
                       weak_will_win_probability, num_generations, fitness_function, function_order):
     points_amount = (value_to - value_from) / epsilon
     chromosome_length = get_nearest_2_power(points_amount)
-    population = generate_population(population_size, chromosome_length, 0, points_amount - 1, function_order)
+    population = generate_population(population_size, chromosome_length, 0, 2**chromosome_length, function_order)
     for i in range(num_generations):
         fitness_values = evaluate_population(population, fitness_function, lambda subchromosome: restore_number(subchromosome, value_from, value_to, epsilon))
         parents = [selection(population, fitness_values, tournament_size, weak_will_win_probability) for _ in range(population_size)] # популяция сократилась в tournament_size раз
@@ -52,7 +47,8 @@ def fitness(x):
 
 def restore_number(number, value_from, value_to, epsilon):
     points_amount = (value_to - value_from) / epsilon
-    return value_from + (number / points_amount) * (value_to - value_from)
+    power = get_nearest_2_power(points_amount)
+    return value_from + number * ((value_to - value_from) / (2**power - 1))
 
 
 if __name__ == '__main__':
