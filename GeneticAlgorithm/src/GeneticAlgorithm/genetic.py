@@ -101,7 +101,7 @@ def decimal_to_binary_list(decimal, chromosome_length):
     return list(map(lambda ch: int(ch) , chromosome))
 
 
-# селекция турнирным методом
+# селекция турнирным методом (возвращается одна хромосома, победившая в турнире)
 def selection(population, fitness_values, tournament_size, weak_will_win_probability):
     tournament_participants = random.sample(range(len(population)), tournament_size) # выбираем tournament_size участников турнира из исходной популяции
     winner_index = tournament_participants[0]
